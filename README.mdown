@@ -1,0 +1,15 @@
+# DDimageCompress
+
+`DDimageCompress ` iOS压缩图片目前支持PNG JPEG压缩
+
+
+## Reference
+
+| 图片类型  | 参考库  | 链接 |
+|:------------- |:---------------:| -------------:|
+| jpeg     | jpegtran  |  <https://jpegclub.org/> |
+| png      | pngquant  |  <https://pngquant.org/> |
+
+## License
+
+This code is distributed under the terms and conditions of the [GPL license](LICENSE).
