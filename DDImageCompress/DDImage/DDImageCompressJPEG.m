@@ -47,11 +47,11 @@ static jpeg_transform_info transformoption; /* image transformation options */
 
     NSString *tmpDir = NSTemporaryDirectory();
 
-    NSString *tempInputJpgPath = [NSString stringWithFormat:@"%@/%p.jpg",tmpDir,self];
+    NSString *tempInputJpgPath = [NSString stringWithFormat:@"%@%p.jpg",tmpDir,self];
             [UIImageJPEGRepresentation(self, 0.8) writeToFile:tempInputJpgPath atomically:YES];
     NSString *tempOuputJpgPath = outputFilePath;
     if (!tempOuputJpgPath) {
-        tempOuputJpgPath = [NSString stringWithFormat:@"%@/temp_%p.jpg",tmpDir, self];
+        tempOuputJpgPath = [NSString stringWithFormat:@"%@temp_%p.jpg",tmpDir, self];
     }
 
     if ([[self class] compressToJpeg:tempInputJpgPath output:tempOuputJpgPath]) {
