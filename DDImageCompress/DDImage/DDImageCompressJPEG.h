@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface UIImage (compressJPEG)
 - (NSData *)compressToJpeg:(NSString *)outputFilePath;
+- (void)saveToFlie:(NSString *)outputFilePath quality:(int)quality;
 + (BOOL)compressToJpeg:(NSString *)inputFilePath output:(NSString *)outputFilePath;
 @end
 

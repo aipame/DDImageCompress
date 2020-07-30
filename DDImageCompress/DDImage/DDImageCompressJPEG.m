@@ -48,7 +48,7 @@ static jpeg_transform_info transformoption; /* image transformation options */
     NSString *tmpDir = NSTemporaryDirectory();
 
     NSString *tempInputJpgPath = [NSString stringWithFormat:@"%@%p.jpg",tmpDir,self];
-            [UIImageJPEGRepresentation(self, 0.8) writeToFile:tempInputJpgPath atomically:YES];
+    [self saveToFlie:tempInputJpgPath quality:80];
     NSString *tempOuputJpgPath = outputFilePath;
     if (!tempOuputJpgPath) {
         tempOuputJpgPath = [NSString stringWithFormat:@"%@temp_%p.jpg",tmpDir, self];
@@ -60,6 +60,74 @@ static jpeg_transform_info transformoption; /* image transformation options */
 
     return nil;
 }
+
+- (void)saveToFlie:(NSString *)outputFilePath quality:(int)quality {
+    CGImageRef image = [self CGImage];
+    CGSize size = self.size;
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    int pixelCount = size.width * size.height;
+    uint8_t* rgba = malloc(pixelCount * 4);
+    CGContextRef context = CGBitmapContextCreate(rgba, size.width, size.height, 8, 4 * size.width, colorSpace, kCGImageAlphaPremultipliedLast);
+    CGContextDrawImage(context, CGRectMake(0, 0, size.width, size.height), image);
+    CGContextRelease(context);
+
+    // 移除 alpha 通道
+    char * rgb = malloc(pixelCount * 3);
+    int m = 0;
+    int n = 0;
+    for(int i=0; i<pixelCount; i++){
+        rgb[m++] = rgba[n++];
+        rgb[m++] = rgba[n++];
+        rgb[m++] = rgba[n++];
+        n++;
+    }
+    free(rgba);
+
+    rgb2jpg([outputFilePath UTF8String], rgb, size.width, size.height, quality);
+    // 使用完之后释放内存
+    free(rgb);
+}
+
+int rgb2jpg(char *jpg_file, char *pdata, int width, int height, int quality)
+{
+    int depth = 3;
+    JSAMPROW row_pointer[1];
+    struct jpeg_compress_struct cinfo;
+    struct jpeg_error_mgr jerr;
+    FILE *outfile;
+
+    if ((outfile = fopen(jpg_file, "wb")) == NULL)
+    {
+        return -1;
+    }
+
+    cinfo.err = jpeg_std_error(&jerr);
+    jpeg_create_compress(&cinfo);
+    jpeg_stdio_dest(&cinfo, outfile);
+
+    cinfo.image_width      = width;
+    cinfo.image_height     = height;
+    cinfo.input_components = depth;
+    cinfo.in_color_space   = JCS_RGB;
+    jpeg_set_defaults(&cinfo);
+
+    jpeg_set_quality(&cinfo, quality, TRUE );
+    jpeg_start_compress(&cinfo, TRUE);
+
+    int row_stride = width * depth;
+    while (cinfo.next_scanline < cinfo.image_height)
+    {
+        row_pointer[0] = (JSAMPROW)(pdata + cinfo.next_scanline * row_stride);
+        jpeg_write_scanlines(&cinfo, row_pointer, 1);
+    }
+
+    jpeg_finish_compress(&cinfo);
+    jpeg_destroy_compress(&cinfo);
+    fclose(outfile);
+
+    return 0;
+}
+
 
 + (BOOL)compressToJpeg:(NSString *)inputFilePath output:(NSString *)outputFilePath {
 
